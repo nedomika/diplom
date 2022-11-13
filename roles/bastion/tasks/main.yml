@@ -54,12 +54,18 @@
     group: sudo
     mode: 0600
 
-- name: Creaate everyday shudler backup "Minutes Hours Day-of-month Month Day-of-week"
+- name: delete existing schedule
+  ignore_errors: yes
   become: false
   become_user: "{{ linux_user }}"
-  command: /home/{{ linux_user }}/yandex-cloud/bin/yc compute snapshot-schedule create everyday --expression "35 0 */1 * *" --retention-period 604800s
+  command: /home/{{ linux_user }}/yandex-cloud/bin/yc compute snapshot-schedule delete everyday
 
-- name: Creaate everyday shudler backup "Minutes Hours Day-of-month Month Day-of-week"
+- name: Create everyday shudler backup "Minutes Hours Day-of-month Month Day-of-week"
+  become: false
+  become_user: "{{ linux_user }}"
+  command: /home/{{ linux_user }}/yandex-cloud/bin/yc compute snapshot-schedule create everyday --expression "30 15 */1 * *" --retention-period 604800s
+
+- name: Add all disks to existing schedule
   become_user: "{{ linux_user }}"
   become: false
   command: /home/{{ linux_user }}/yandex-cloud/bin/yc compute snapshot-schedule  add-disks everyday --disk-id {{ web_1 }},{{ web_2 }},{{ monitor }},{{ grafana }},{{ elastic }},{{ bastion }},{{ nat }}

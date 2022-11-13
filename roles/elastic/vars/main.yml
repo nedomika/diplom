@@ -1,9 +1,0 @@
----
-# vars file for roles/elastic
-#elastic_pass: QwertyElastic22
-#filebeat_user: filebeat_writer
-#filebeat_user_role: filebeat_writer
-#filebeat_user_pass: QwertyBeats22
-#kibana_pass: QwertyKibana22
-#kibana_system_pass: QwertyKibana22
-#beats_system_pass: QwertyBeats22
