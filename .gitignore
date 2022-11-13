@@ -4,3 +4,7 @@
 /terraform.tfstate
 /terraform.tfstate.backup
 /vars.tf
+/group_vars/all/password.yml
+/roles/bastion/templates/yc_config.j2
+/roles/bastion/vars/main.yml
+/roles/nginx/templates/index.j2yes
