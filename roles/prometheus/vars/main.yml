@@ -1,0 +1,14 @@
+---
+# vars file for roles/prometheus
+prometheus_bin: /usr/local/bin/prometheus
+prometheus_user: prometheus
+prometheus_group: "{{ prometheus_user }}"
+promtool_bin: /usr/local/bin/promtool
+prometheus_dir_conf: /etc/prometheus
+
+# prometheus_server: ""
+prometheus_exporter_port: "9100"
+prometheus_custom_targets_path: "/etc/prometheus/dynamic"
+prometheus_custom_targets_filename: "ansible-generated.yml"
+prometheus_custom_targets_job_label: "ansible-generated"
+# prometheus_reload_url: ""

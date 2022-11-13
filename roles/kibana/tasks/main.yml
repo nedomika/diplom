@@ -1,0 +1,31 @@
+---
+# tasks file for roles/kibana
+- name: add repository
+  shell: 
+    "echo \"deb [trusted=yes] https://mirror.yandex.ru/mirrors/elastic/7/ stable main\" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list"
+
+- name: update apt cache
+  apt:
+    update_cache: yes
+
+- name: install kibana
+  apt:
+    name: kibana
+    state: present
+    update_cache: no
+    cache_valid_time: 3600
+
+- name: copy file kibana config
+  template:
+    src: kibana.yml.j2
+    dest: /etc/kibana/kibana.yml
+    owner: root
+    group: kibana
+    mode: 0660
+
+- name: enable kibana
+  systemd:
+    name: kibana
+    state: started
+    daemon_reload: yes
+    enabled: yes

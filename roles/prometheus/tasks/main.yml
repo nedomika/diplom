@@ -1,0 +1,104 @@
+---
+# tasks file for roles/prometheus
+#- name: install prometheus
+#  apt:
+#    name: prometheus
+#    state: latest
+#    update_cache: yes
+- name: create prometheus_user
+  user:
+    name: "{{ prometheus_user }}"
+    append: true
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: false
+
+- name: Create a directory /etc/prometheus/
+  file:
+    path: "{{ prometheus_dir_conf }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+
+- name: download and unzip prometheus
+  unarchive:
+    src: "https://github.com/prometheus/prometheus/releases/download/v2.39.1/prometheus-2.39.1.linux-amd64.tar.gz"
+    dest: /tmp/
+    remote_src: yes
+    validate_certs: no
+
+- name: move the binary prometheus to the final destination
+  copy:
+    src: "/tmp/prometheus-2.39.1.linux-amd64/prometheus"
+    dest: "{{ prometheus_bin }}"
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: 0755
+    remote_src: yes
+
+- name: move the binary promtool to the final destination
+  copy:
+    src: "/tmp/prometheus-2.39.1.linux-amd64/promtool"
+    dest: "{{ promtool_bin }}"
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: 0755
+    remote_src: yes
+
+- name: custom conf prometheus
+  template:
+    src: prometheus.j2
+    dest: "{{ prometheus_dir_conf }}/prometheus.yml"
+    mode: 0755
+
+
+- name: move consoles/ to the final destination
+  copy:
+    src: "/tmp/prometheus-2.39.1.linux-amd64/consoles/"
+    dest: "{{ prometheus_dir_conf }}/consoles/"
+    directory_mode: yes
+    remote_src: yes
+
+- name: move console_libraries to the final destination
+  copy:
+    src: "/tmp/prometheus-2.39.1.linux-amd64/console_libraries/"
+    dest: "{{ prometheus_dir_conf }}/console_libraries/"
+    directory_mode: yes
+    remote_src: yes
+
+- name: clean
+  file:
+    path: /tmp/prometheus-2.39.1.linux-amd64/
+    state: absent
+
+- name: create directory rules rules.d files_sd /var/lib/prometheus
+  file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ prometheus_user }}"
+    group: "{{ prometheus_group }}"
+    mode: 0755
+  loop:
+    - "{{ prometheus_dir_conf }}/rules"
+    - "{{ prometheus_dir_conf }}/rules.d"
+    - "{{ prometheus_dir_conf }}/rules_sd"
+    - /var/lib/prometheus
+    - "{{ prometheus_dir_conf }}/custom"
+
+- name: copy web_targets.j2
+  template:
+    src: web_targets.j2
+    dest: "{{ prometheus_dir_conf }}/custom/web_targets.json"
+    owner: root
+    group: root
+    mode: 0755
+
+
+- name: install service
+  template:
+    src: prometheus.service.j2
+    dest: /etc/systemd/system/prometheus.service
+    owner: root
+    group: root
+    mode: 0755
+  notify: reload_daemon_and_restart_prometheus

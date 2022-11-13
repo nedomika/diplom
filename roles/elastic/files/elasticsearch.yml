@@ -1,0 +1,14 @@
+cluster.name: diplom-nedomika
+# ------------------------------------ Node ------------------------------------
+node.name: elastic
+## ----------------------------------- Paths ------------------------------------
+path.data: /var/lib/elasticsearch
+path.logs: /var/log/elasticsearch
+
+# ---------------------------------- Network -----------------------------------
+network.host: 0.0.0.0
+http.port: 9200
+# --------------------------------- Discovery ----------------------------------
+discovery.type: single-node
+# ---------------------------------- Security ----------------------------------
+xpack.security.enabled: true

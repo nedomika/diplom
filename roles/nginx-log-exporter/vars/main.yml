@@ -1,0 +1,4 @@
+---
+# vars file for roles/nginx-log-exporter
+nginxlog_exporter_user: nginxlog-exporter
+nginxlog_exporter_group: "{{ nginxlog_exporter_user }}"

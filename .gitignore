@@ -1,0 +1,6 @@
+/.terraform
+/.terraform.lock.hcl
+/enventory.ini
+/terraform.tfstate
+/terraform.tfstate.backup
+/vars.tf

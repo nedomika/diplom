@@ -1,0 +1,20 @@
+---
+# tasks file for roles/nginx
+- name: installing nginx
+  apt:
+    name: nginx
+    update_cache: yes
+    state: present
+
+- name: "Load nginx config"
+  template: src=nginx.conf.j2 dest=/etc/nginx/nginx.conf
+
+
+- name: Create index.html using Jinja2
+  template:
+    src: index.j2
+    dest: /var/www/html/index.html
+  notify: reload_nginx
+
+- name: Changing perm of "/var/log/nginx/access.log"
+  file: dest=/var/log/nginx/access.log mode=o+r

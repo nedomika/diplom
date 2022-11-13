@@ -1,0 +1,8 @@
+---
+# handlers file for roles/prometheus
+- name: reload_daemon_and_restart_prometheus
+  systemd:
+    name: prometheus
+    state: restarted
+    daemon_reload: yes
+    enabled: yes

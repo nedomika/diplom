@@ -1,0 +1,39 @@
+---
+# tasks file for roles/filebeat
+- name: add repository
+  shell: 
+    "echo \"deb [trusted=yes] https://mirror.yandex.ru/mirrors/elastic/7/ stable main\" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list"
+
+- name: update apt cache
+  apt:
+    update_cache: yes
+
+- name: install filebeat
+  apt:
+    name: filebeat
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Enable nginx Module
+  shell: "filebeat modules enable nginx"
+
+- name: add config filebeat
+  template:
+    src: filebeat.yml
+    dest: /etc/filebeat/filebeat.yml
+    owner: root
+    group: root
+
+- name: enable filebeat
+  systemd:
+    name: filebeat
+    state: started
+    daemon_reload: yes
+    enabled: yes
+
+#- name: restart filebeat
+#  systemd:
+#    name: filebeat
+#    state: restarted
+

@@ -1,0 +1,8 @@
+# Kibana is served by a back end server. This setting specifies the port to use.
+server.port: 5601
+server.host: {{ ansible_default_ipv4.address }}
+server.name: "kibana.nedomika"
+elasticsearch.hosts: ["http://elastic.nedomika:9200"]
+kibana.index: ".kibana"
+elasticsearch.username: "kibana_system"
+elasticsearch.password: "{{ kibana_system_pass }}"

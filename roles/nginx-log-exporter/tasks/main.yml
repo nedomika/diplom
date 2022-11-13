@@ -1,0 +1,31 @@
+---
+# tasks file for roles/nginx-log-exporter
+- name: create nginxlog-exporterr user
+  user:
+    name: "{{ nginxlog_exporter_user }}"
+    append: true
+    shell: /usr/sbin/nologin
+    system: true
+    create_home: false
+
+
+- name: download and install Nginx Log Exporter.
+  apt:
+    deb: https://github.com/martin-helmich/prometheus-nginxlog-exporter/releases/download/v1.9.2/prometheus-nginxlog-exporter_1.9.2_linux_amd64.deb
+
+- name: Add nginxlog_exporter_user to ADM group
+  user:
+    name: "{{ nginxlog_exporter_user }}"
+    group: adm
+
+- name: Set up root acsess for service
+  ini_file:
+    dest: /lib/systemd/system/prometheus-nginxlog-exporter.service
+    no_extra_spaces: yes
+    section: Service
+    option: "{{ item.option }}"
+    value: "{{ item.value }}"
+  with_items:
+    - { option: "User", value: "{{ nginxlog_exporter_user }}" }
+    - { option: "Group", value: "{{ nginxlog_exporter_group }}" }
+  notify: reload_prometheus-nginxlog-exporter

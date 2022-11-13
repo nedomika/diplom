@@ -1,0 +1,46 @@
+- hosts: bastion
+  become: yes
+  become_method: sudo
+  gather_facts: no
+  roles:
+  - bastion
+
+- hosts: elastic
+  become: yes
+  gather_facts: no
+  become_method: sudo
+  roles:
+  - elastic
+
+- hosts: kibana
+  become: yes
+  gather_facts: yes
+  become_method: sudo
+  roles:
+  - kibana
+
+- hosts: web
+  become: yes
+  gather_facts: yes
+  become_method: sudo
+  roles:
+  - nginx
+  - node-exporter
+  - nginx-log-exporter
+  - filebeat
+
+- hosts: monitor
+  become: yes
+  gather_facts: no
+  become_method: sudo
+  roles:
+  - prometheus
+
+- hosts: grafana
+  become: yes
+  gather_facts: no
+  become_method: sudo
+  roles:
+  - grafana
+
+  
