@@ -1,20 +1,19 @@
 ---
 # tasks file for roles/nginx
+### Установка NGINX
 - name: installing nginx
   apt:
     name: nginx
     update_cache: yes
     state: present
-
+### Копирование кофигкрации NGINX с костомным выводом логов для nginx-log-exporter
 - name: "Load nginx config"
-  template: src=nginx.conf.j2 dest=/etc/nginx/nginx.conf
-
-
+  template: 
+    src: nginx.conf.j2
+    dest: /etc/nginx/nginx.conf
+### Копирование INDEX.HTML созданного terraform
 - name: Create index.html using Jinja2
   template:
     src: index.j2
     dest: /var/www/html/index.html
   notify: reload_nginx
-
-- name: Changing perm of "/var/log/nginx/access.log"
-  file: dest=/var/log/nginx/access.log mode=o+r

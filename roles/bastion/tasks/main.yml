@@ -1,18 +1,12 @@
 ---
 # tasks file for roles/bastion
-######## Копируем ключ id_rsa
-
-#- name: Copy key
-#  copy:
-#    src: ./id_rsa
-#    dest: ~{{ linux_user }}/.ssh/id_rsa
-#   mode: 0600
+### Копируем ключ id_rsa из домашней директории в пересенну ssh_priv_keys
 - name: fetch ssh keys
   become: false
   shell: cat ~/.ssh/id_rsa
   register: ssh_priv_keys
   connection: local
-
+### Создание файла id_rsa в каталоге linux_user (из vars.tf)
 - name: Creating a file with content
   become_user: "{{ linux_user }}"
   become: false
@@ -21,29 +15,24 @@
     dest: "/home/{{ linux_user }}/.ssh/id_rsa"
     content: |
         {{ ssh_priv_keys.stdout }}
-    
-
-#- name: deploy keys on all servers
-#  become_user: "{{ linux_user }}"
-#  become: false
-#  authorized_key: 
-#    user: "{{ linux_user }}"
-#   key: "{{ ssh_priv_keys.stdout }}"
-
-######## ставим yc cli
+######## Проверка наличия YC CLI
+- name: Check that bin YC CLI exist
+  stat:
+    path: /home/{{ linux_user }}/yandex-cloud/bin/yc
+  register: stat_result
+######## Установка YC CLI https://cloud.yandex.com/en/docs/cli/operations/install-cli
 - name: YC CLI install
-  #become_user: "{{ linux_user }}"
   become: false
   shell: curl -sL https://storage.yandexcloud.net/yandexcloud-yc/install.sh | bash -s -- -a
-
-######## копируем готовый конфиг yc cli
+  when: not stat_result.stat.exists
+### Создание каталога для конфигурация YC
 - name: YC CLI Create config dir
   file:
     path: "root/.config/yandex-cloud/"
     state: directory
     mode: 0755
     recurse: yes
-
+### Создание файла конфигурации с параметрами доступа yc cli
 - name: YC CLI copy config
   become: true
   become_user: "{{ linux_user }}"
@@ -53,18 +42,18 @@
     owner: "{{ linux_user }}"
     group: sudo
     mode: 0600
-
+### Удаление расписания создания снепшотов в YC (на случай если рананее не удалено)
 - name: delete existing schedule
-  ignore_errors: yes
+  ignore_errors: true
   become: false
   become_user: "{{ linux_user }}"
   command: /home/{{ linux_user }}/yandex-cloud/bin/yc compute snapshot-schedule delete everyday
-
+### Создание расписания создания снепшотов в YC с шаблоном из var.tf
 - name: Create everyday shudler backup "Minutes Hours Day-of-month Month Day-of-week"
   become: false
   become_user: "{{ linux_user }}"
-  command: /home/{{ linux_user }}/yandex-cloud/bin/yc compute snapshot-schedule create everyday --expression "30 15 */1 * *" --retention-period 604800s
-
+  command: /home/{{ linux_user }}/yandex-cloud/bin/yc compute snapshot-schedule create everyday --expression "{{ snapshot_schedule }}" --retention-period 604800s
+### Добавление дисков в расписание  (ID диски созданы при terraform apply и размещены в файле переменных роли)
 - name: Add all disks to existing schedule
   become_user: "{{ linux_user }}"
   become: false

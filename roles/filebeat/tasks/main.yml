@@ -1,5 +1,6 @@
 ---
 # tasks file for roles/filebeat
+### Установка elasticsearch из ЗЕРКАЛА репозитария YANDEX
 - name: add repository
   shell: 
     "echo \"deb [trusted=yes] https://mirror.yandex.ru/mirrors/elastic/7/ stable main\" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list"
@@ -12,28 +13,22 @@
   apt:
     name: filebeat
     state: present
-    update_cache: yes
+    update_cache: no
     cache_valid_time: 3600
-
+### Включение модуля nginx с настройкаит по умолчанию
 - name: Enable nginx Module
   shell: "filebeat modules enable nginx"
-
+### Копирование файла конфишурации с изменеными пароаметрами подключения к KIBANA и ELASTICEARCH
 - name: add config filebeat
   template:
     src: filebeat.yml
     dest: /etc/filebeat/filebeat.yml
     owner: root
     group: root
-
+ ### Запуск filebeat
 - name: enable filebeat
   systemd:
     name: filebeat
     state: started
     daemon_reload: yes
     enabled: yes
-
-#- name: restart filebeat
-#  systemd:
-#    name: filebeat
-#    state: restarted
-

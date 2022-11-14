@@ -1,10 +1,5 @@
 ---
-# tasks file for roles/prometheus
-#- name: install prometheus
-#  apt:
-#    name: prometheus
-#    state: latest
-#    update_cache: yes
+### Создание пользователя и группы для запуска сервиса prometheus
 - name: create prometheus_user
   user:
     name: "{{ prometheus_user }}"
@@ -12,7 +7,8 @@
     shell: /usr/sbin/nologin
     system: true
     create_home: false
-
+### Создание каталога для конфигурации
+### Устновка с ручным распредеоением файлов архива https://www.digitalocean.com/community/tutorials/how-to-install-prometheus-on-ubuntu-16-04
 - name: Create a directory /etc/prometheus/
   file:
     path: "{{ prometheus_dir_conf }}"
@@ -44,13 +40,6 @@
     group: "{{ prometheus_group }}"
     mode: 0755
     remote_src: yes
-
-- name: custom conf prometheus
-  template:
-    src: prometheus.j2
-    dest: "{{ prometheus_dir_conf }}/prometheus.yml"
-    mode: 0755
-
 
 - name: move consoles/ to the final destination
   copy:
@@ -84,7 +73,14 @@
     - "{{ prometheus_dir_conf }}/rules_sd"
     - /var/lib/prometheus
     - "{{ prometheus_dir_conf }}/custom"
+## Создание кофигурации с загрузкой таргетов из файлов  в custom каталоге
+- name: custom conf prometheus
+  template:
+    src: prometheus.j2
+    dest: "{{ prometheus_dir_conf }}/prometheus.yml"
+    mode: 0755
 
+### Создание таргетов - nginx_exporter и node_exporter
 - name: copy web_targets.j2
   template:
     src: web_targets.j2
@@ -92,8 +88,7 @@
     owner: root
     group: root
     mode: 0755
-
-
+### Создания сервиса с параметрами созданного пользователя 
 - name: install service
   template:
     src: prometheus.service.j2

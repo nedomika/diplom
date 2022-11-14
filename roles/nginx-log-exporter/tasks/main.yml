@@ -1,24 +1,25 @@
 ---
 # tasks file for roles/nginx-log-exporter
-- name: create nginxlog-exporterr user
+### Создание пользователя и группы для запуска сервиса prometheus-nginxlog-exporter
+- name: create nginxlog-exporter user
   user:
     name: "{{ nginxlog_exporter_user }}"
     append: true
     shell: /usr/sbin/nologin
     system: true
     create_home: false
-
-
+### Установка prometheus-nginxlog-exporter
 - name: download and install Nginx Log Exporter.
   apt:
     deb: https://github.com/martin-helmich/prometheus-nginxlog-exporter/releases/download/v1.9.2/prometheus-nginxlog-exporter_1.9.2_linux_amd64.deb
-
+### Добаление пользователя в группу ADM для чтения логов NGINX 
 - name: Add nginxlog_exporter_user to ADM group
   user:
     name: "{{ nginxlog_exporter_user }}"
-    group: adm
-
-- name: Set up root acsess for service
+    groups: adm
+    append: yes
+### Смена прав запуска сервиса на созданные ранее
+- name: Set up rights for service
   ini_file:
     dest: /lib/systemd/system/prometheus-nginxlog-exporter.service
     no_extra_spaces: yes

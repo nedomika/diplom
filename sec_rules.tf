@@ -63,12 +63,7 @@
     v4_cidr_blocks = ["0.0.0.0/0"]
     port           = 3000
   }
-/*   egress {
-    protocol       = "TCP"
-    description    = " "
-    v4_cidr_blocks = ["${local.ip_monitor}/32"]
-    port           = 9090
-  } */
+
   egress {
     protocol       = "TCP"
     description    = " "

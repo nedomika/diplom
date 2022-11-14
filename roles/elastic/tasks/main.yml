@@ -1,5 +1,6 @@
 ---
 # tasks file for roles/elastic
+### Установка elasticsearch из ЗЕРКАЛА репозитария YANDEX
 - name: add repository
   shell: 
     "echo \"deb [trusted=yes] https://mirror.yandex.ru/mirrors/elastic/7/ stable main\" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list"
@@ -18,34 +19,33 @@
     owner: root
     group: elasticsearch
     mode: 0660
-##Увеличиваем timeout замечательного скрвиса elasticsearch
+### Увеличение timeout замечательного скрвиса elasticsearch посредстов создания drop-in файла 
+### https://wiki.archlinux.org/title/Systemd_(%D0%A0%D1%83%D1%81%D1%81%D0%BA%D0%B8%D0%B9)#Drop-in_%D1%84%D0%B0%D0%B9%D0%BB%D1%8B  
 - name: Create a directory if it does not exist
   file:
     path: /root/etc/systemd/system/elasticsearch.service.d/
     state: directory
- 
+
 - name: Creating an startup-timeout.conf file
   command:  "echo -e \"[Service]\nTimeoutStartSec=3min 30s\" | sudo tee /etc/systemd/system/elasticsearch.service.d/startup-timeout.conf"
-
-
-#Смена пароля пользователя elastic 
+### Смена пароля пользователя elastic 
 - name: Set password for elastic user
+  ignore_errors: true
   shell:
     "printf \"{{ elastic_pass }}\" | /usr/share/elasticsearch/bin/elasticsearch-keystore add \"bootstrap.password\" -x"
- 
+ ### Запуск elasticsearch 
 - name: enable elasticsearch.service
   systemd:
     name: elasticsearch
     state: started
     daemon_reload: yes
     enabled: yes
-
+### Проверка доступности сервича перед загрузкой файлов JSON по API
 - name: Wait for port 9200 to become open on the host
   ansible.builtin.wait_for:
     port: 9200
     delay: 10
-
-
+### Копирование файлов создания роли и пользователя filebeat (файл vars.tf) 
 - name: copy filebeat_writer_user.json to /tmp
   template:
     src: filebeat_writer_user.json.j2
@@ -59,12 +59,11 @@
     dest: /tmp/filebeat_writer.json
     owner: root
     group: root    
-
-#Смена пароля пользователя kibana 
+### Смена пароля пользователя kibana 
 - name: Set password for kibana_system user
   shell: "curl -uelastic:\"{{ elastic_pass }}\" -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/kibana_system/_password' -d '{ \"password\":\"{{ kibana_system_pass }}\" }'"
   ignore_errors: true
-#Добавление роли для filebeat пользователя 
+### Добавление роли для filebeat пользователя 
 - name: add role filebeat_writer
   shell: "curl -uelastic:\"{{ elastic_pass }}\" -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/role/{{ filebeat_user_role }}' -d @/tmp/filebeat_writer.json"
 
@@ -72,7 +71,6 @@
   file:
     state: absent
     path: /tmp/filebeat_writer.json
-
 #Добавление filebeat пользователя 
 - name: add role filebeat_writer_user 
   shell: "curl -uelastic:\"{{ elastic_pass }}\" -XPUT -H 'Content-Type: application/json' 'http://localhost:9200/_xpack/security/user/{{ filebeat_user }}' -d @/tmp/filebeat_writer_user.json"

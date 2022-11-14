@@ -1,5 +1,6 @@
 ---
 # tasks file for roles/kibana
+### Установка elasticsearch из ЗЕРКАЛА репозитария YANDEX
 - name: add repository
   shell: 
     "echo \"deb [trusted=yes] https://mirror.yandex.ru/mirrors/elastic/7/ stable main\" | sudo tee /etc/apt/sources.list.d/elastic-7.x.list"
@@ -14,7 +15,7 @@
     state: present
     update_cache: no
     cache_valid_time: 3600
-
+### Копирования фавйла кофигурации с настроенным подключением к elastic по паролю (из файла vars.tf)
 - name: copy file kibana config
   template:
     src: kibana.yml.j2
@@ -22,7 +23,7 @@
     owner: root
     group: kibana
     mode: 0660
-
+###  Запуск сервиса kibana
 - name: enable kibana
   systemd:
     name: kibana

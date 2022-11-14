@@ -1,5 +1,6 @@
 ---
 # tasks file for roles/node-exporter
+### Создание пользователя и группы для запуска сервиса node_exporter
 - name: create node exporter user
   user:
     name: "{{ node_exporter_user }}"
@@ -7,15 +8,17 @@
     shell: /usr/sbin/nologin
     system: true
     create_home: false
-
+### Создание каталога для конфигурации
 - name: create node exporter config dir
   file:
     path: "{{ node_exporter_dir_conf }}"
     state: directory
     owner: "{{ node_exporter_user }}"
     group: "{{ node_exporter_group }}"
-  
-- name: download and unzip node exporter if not exist
+### Установка node_exporter
+### https://prometheus.io/docs/guides/node-exporter/
+### https://prometheus.io/download/#node_exporter 
+- name: download and unzip node exporter
   unarchive:
     src: "https://github.com/prometheus/node_exporter/releases/download/v1.4.0/node_exporter-1.4.0.linux-amd64.tar.gz"
     dest: /tmp/
@@ -35,7 +38,7 @@
   file:
     path: /tmp/node_exporter-1.4.0.linux-amd64/
     state: absent
-
+### Создания сервиса с параметрами созданного пользователя 
 - name: install service
   template:
     src: node_exporter.service.j2
@@ -45,10 +48,8 @@
     mode: 0755
   notify: reload_daemon_and_restart_node_exporter
 
-- meta: flush_handlers
-
-- name: service always started
-  systemd:
-    name: node_exporter
-    state: started
-    enabled: yes
+#- name: service always started
+#  systemd:
+#    name: node_exporter
+#    state: started
+#    enabled: yes
